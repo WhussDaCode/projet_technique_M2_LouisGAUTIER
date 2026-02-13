@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudshop-db
+  namespace: cloudshop
+spec:
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      # Autorise le pod à aller sur le nœud avec la taint "app=database" 
+      tolerations:
+      - key: "app"
+        operator: "Equal"
+        value: "database"
+        effect: "NoSchedule"
+      # Force le pod à aller spécifiquement sur ce nœud 
+      nodeSelector:
+        type: db-node
+      containers:
+      - name: mysql
+        image: mysql:5.7
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "CloudShopPass123"
+        - name: MYSQL_DATABASE
+          value: "shopdb"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc
+

@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-frontend
+  namespace: cloudshop
+spec:
+  podSelector:
+    matchLabels:
+      app: guestbook
+      tier: frontend
+  policyTypes:
+  - Ingress
+  ingress:
+  - from: [] # Autorise tout le trafic entrant vers le frontend (nécessaire pour l'Ingress)
+    ports:
+    - protocol: TCP
+      port: 80

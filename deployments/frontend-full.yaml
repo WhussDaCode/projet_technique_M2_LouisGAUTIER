@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: frontend-sa
+  namespace: cloudshop
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudshop-frontend
+  namespace: cloudshop
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: guestbook
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: guestbook
+        tier: frontend
+    spec:
+      serviceAccountName: frontend-sa
+      affinity:
+        # On demande d'éviter d'être sur le même nœud, mais on n'interdit pas (pour la démo Kind)
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: tier
+                  operator: In
+                  values: ["frontend"]
+              topologyKey: "kubernetes.io/hostname"
+        # On garde l'interdiction STRICTE d'aller sur le nœud de la Database [cite: 87]
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: type
+                operator: NotIn
+                values: ["db-node"]
+      containers:
+      - name: php-redis
+        image: gcr.io/google-samples/gb-frontend:v5 # Mise à jour vers v5
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: cloudshop
+spec:
+  selector:
+    app: guestbook
+    tier: frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
