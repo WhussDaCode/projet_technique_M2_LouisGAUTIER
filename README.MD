@@ -2,7 +2,7 @@ Projet CloudShop - Guide de Déploiement CompletCe document permet de déployer 
 
 🏗️ 1. Création du Cluster KindLe cluster est composé de 1 Control-Plane et 3 Workers pour permettre une isolation réelle.
 
-Commande : 
+COMMANDE : 
 - kind create cluster --config kind-config.yaml --name cloudshop-cluster
 
 🛡️ 2. Installation du Réseau et de la Sécurité (CNI Calico)Par défaut, Kind ne gère pas les NetworkPolicies. Il faut installer Calico pour que le "pare-feu" fonctionne.
@@ -26,7 +26,7 @@ COMMANDES :
 
 A. Test de Sécurité (Doit afficher "Connection timed out")
 
-Le Frontend ne peut pas attaquer la base de données en direct.
+S'assurer que le Frontend ne peut pas attaquer la base de données en direct.
 
 COMMANDE :
 kubectl exec -it $(kubectl get pod -l tier=frontend -n cloudshop -o name | head -n 1) -n cloudshop -- curl --connect-timeout 2 db-service:3306
